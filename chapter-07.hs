@@ -1,5 +1,7 @@
 -- Exercises from chapter 7.
 
+import Data.Char
+
 -- 1
 
 lc :: (a -> b) -> (a -> Bool) -> [a] -> [b]
@@ -70,3 +72,64 @@ iterate' f = unfold (\_ -> False) id f
 
 -- 7
 
+-- Given:
+
+type Bit = Int
+
+bin2int :: [Bit] -> Int
+bin2int = foldr (\x y -> x + 2*y) 0
+
+int2bin :: Int -> [Bit]
+int2bin 0 = []
+int2bin n = n `mod` 2 : int2bin (n `div` 2)
+
+make8 :: [Bit] -> [Bit]
+make8 bits = take 8 (bits ++ repeat 0)
+
+channel :: [Bit] -> [Bit]
+channel = id
+
+transmit :: String -> String
+transmit = decode . channel . encode
+
+-- we add:
+
+add_parity :: [Bit] -> [Bit]
+add_parity bits = bits ++ [mod (sum bits) 2]
+
+check_parity :: [Bit] -> [Bit]
+check_parity bits | add_parity octet == bits = octet
+                  | otherwise                = error "parity error"
+  where octet = take 8 bits
+
+-- and redefine:
+
+encode :: String -> [Bit]
+encode = concat . map (add_parity . make8 . int2bin . ord)
+
+chop9 :: [Bit] -> [[Bit]]
+chop9 [] = []
+chop9 bits = take 9 bits : chop9 (drop 9 bits)
+
+decode :: [Bit] -> String
+decode = map (chr . bin2int . check_parity) . chop9
+
+-- 8
+
+-- Redefining transmit as
+
+transmit' = decode . tail . encode
+
+-- generates a parity error.
+
+-- 9
+
+altMap :: (a -> b) -> (a -> b) -> [a] -> [b]
+altMap _ _ []     = []
+altMap f g (x:xs) = f x : altMap g f xs
+
+-- 10
+
+luhn :: [Int] -> Bool
+luhn xs = mod ((sum . map f . altMap id (*2) . reverse) xs) 10 == 0
+  where f = \x -> if x > 9 then x - 9 else x
