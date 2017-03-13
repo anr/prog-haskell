@@ -74,5 +74,5 @@ luhnDouble d | 2 * d > 9 = 2 * d - 9
              | otherwise = 2 * d
 
 luhn :: Int -> Int -> Int -> Int -> Bool
-luhn d4 d3 d2 d1 = if sum `mod` 10 == 0 then True else False
-                   where sum = d1 + (luhnDouble d2) + d3 + (luhnDouble d4)
+luhn d4 d3 d2 d1 = dsum `mod` 10 == 0
+  where dsum = d1 + (luhnDouble d2) + d3 + (luhnDouble d4)
